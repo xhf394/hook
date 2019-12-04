@@ -1,4 +1,4 @@
-import React, { useState, useReducer, createContext } from 'react';
+import React, { useState, useReducer, useContext, createContext } from 'react';
 import uuid from 'uuid/v4';
 import './App.css';
 
@@ -100,35 +100,46 @@ const Filter = ({dispatch}) => {
   )
 };
 
-const TodoList = ({todoList, dispatch}) => {
-  
-  const handleChange = todo => {
-  	//this can be considered as an action object
-  	dispatch({
-  	  type:todo.complete ? 'UNDO_TODO' : 'DO_TODO', 
-  	  id: todo.id})
-  };
+const TodoList = ({todoList}) => {
+  //destructure
   return (
-  	<div> 
-      <ul>
-          {todoList.map(todo => (
-     	    <li key={todo.id}>
-     	      <label>
-                <input
-                  type='checkbox'
-                  checked={todo.complete}
-                  onChange={() => handleChange(todo)}
-                />
-                  {todo.task}
-     	      </label>
-     	    </li>
-          ))}
-        </ul>
-  	</div>
-  )
+    <ul>
+      {todoList.map(todo => (
+      	<TodoItem 
+          key={todo.id}
+          todo={todo}
+      	/>
+      ))}
+    </ul>
+  ) 
 };
 
-const AddTodo = ({dispatch}) => {
+const TodoItem = ({todo}) => {
+  const dispatch = useContext(TodoContext);
+
+  const handleChange = todo => {
+  	dispatch({
+  	  type: todo.complete ? 'UNDO_TODO' : 'DO_TODO',
+  	  id: todo.id,	
+  	});
+  };
+
+  return (
+    <li>
+      <label>
+        <input
+        type='checkbox'
+        checked={todo.complete}
+        onChange={()=> handleChange(todo)}
+        />
+        {todo.task}
+      </label>
+    </li>
+  )
+}
+
+const AddTodo = () => {
+  const dispatch = useContext(TodoContext);	
   const [task, setTask] = useState('');
     //onsubmit
   const handleSubmit = event => {
@@ -143,7 +154,8 @@ const AddTodo = ({dispatch}) => {
   const handleChangeInput = (event) => {
     setTask(event.target.value);
   }
-
+  
+  console.log(dispatch);
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -154,17 +166,13 @@ const AddTodo = ({dispatch}) => {
   )
 };
 
+const TodoContext = createContext(null);
 
-const Hook = () => {
-  
+const Hook = () => { 
   //useReducer in Hook
   const [filter, dispatchFilter] = useReducer(filterReducer, 'ALL');
-
   //useReducer
   const[todos, dispatchTodos] = useReducer(todoReducer, initialTodos);
-
-  
-
   const filterTodos = todos.filter(todo => {
   	if(filter === 'ALL') {
   	  return true;	
@@ -180,24 +188,47 @@ const Hook = () => {
   console.log(filterTodos);
 
   return(
-  	<div>
-  	  <AddTodo dispatch={dispatchTodos}/>
+  	<TodoContext.Provider value={dispatchTodos}>
+  	  <AddTodo />
   	  <Filter dispatch={dispatchFilter}/>
-  	  <TodoList dispatch={dispatchTodos} todoList={filterTodos}/>
-  	  
-      <div>
-       
-      </div>     
-    </div>  
+  	  <TodoList todoList={filterTodos}/>	     
+    </TodoContext.Provider>  
   )	
 }
 
+
+/**********************************
+*****How to Use React Context******
+***********************************/
+
+const ThemeContext = createContext(null);
+
+const ReactContextA= () => (
+  <ThemeContext.Provider value="green">
+   <D />
+  </ThemeContext.Provider>	
+);
+
+const D = () => (
+  <C />
+);
+
+const C = () => {
+  const value = useContext(ThemeContext);
+ 
+
+  return(
+    <p style={{backgroundColor: value}}>
+    test
+    </p>
+  )	
+}
 
 const App = () => {
   return (
     <div className="App">
     <Hook />
-
+    <ReactContextA />
     </div>
   );
 }
