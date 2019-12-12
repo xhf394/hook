@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useContext, createContext } from 'react';
+import React, { useState, useReducer, useContext, createContext, useEffect } from 'react';
 import uuid from 'uuid/v4';
 import './App.css';
 
@@ -215,8 +215,7 @@ const D = () => (
 
 const C = () => {
   const value = useContext(ThemeContext);
- 
-
+  
   return(
     <p style={{backgroundColor: value}}>
     test
@@ -225,10 +224,13 @@ const C = () => {
 }
 
 const App = () => {
+  //const isOffline = customHooksSample();
+
   return (
     <div className="App">
     <Hook />
     <ReactContextA />
+    <ReactUseeffectSample/>
     </div>
   );
 }
@@ -237,3 +239,89 @@ export default App;
 
 //tips:
 //1. input needs to have a value attribute as a controlled component
+
+/*****************************************
+ *****How to Use React Useeffect Hook*****
+ *****************************************/
+
+//sample as tick tok
+const ReactUseeffectSample = () =>{
+  const [isOn, setIsOn] = useState(false);
+  const [timer, setTimer] = useState(0);
+ 
+  useEffect(() => {
+    let interval;
+    console.log('effect runs');
+    if (isOn) {
+      interval = setInterval(() => setTimer(timer + 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isOn, timer]);
+
+  const onReset = () => {
+    setIsOn(false);
+    setTimer(0);
+  }
+  return (
+    <div>
+    {timer}
+    {!isOn && (
+      <button type="button" onClick={() => {setIsOn(true)}}> 
+        start
+      </button>
+    )}
+    {isOn && (
+      <button type="button" onClick={() => {setIsOn(false)}}>
+        stop
+      </button>  
+    )}
+    
+
+    <button type="button" disabled={timer === 0} onClick={onReset}> 
+      Reset
+    </button>
+
+    </div>
+  
+  )
+}
+
+
+/*****************************************
+ *****How to Use React CUSTOM HOOKS*******
+ *****************************************/
+
+// const customHooksSample = () => {
+//   const [isOffline, setIsOffline] = useState(false);
+  
+//   const onOffline = () => {
+//     setIsOffline(true);
+//   };
+
+//   const onOnline = () => {
+//     setIsOffline(false);
+//   }
+  
+//   useEffect(() => {
+//     window.addEventListener('offline', onOffline);
+//     window.addEventListener('online', onOnline);
+    
+//     //componentUnmount
+//     return () => {
+//       window.removeEventListener('offline', onOffline);
+//       window.removeEventListener('online', onOnline);
+//     }
+//   }, []);
+
+//   return isOffline;
+  
+
+//   //encapsulate in one effect and insert into APP component;
+//   // if (isOffline) {
+//   //   return <div>Sorry, you are offline ... </div>
+//   // }
+
+//   // return <div>You are online! </div>
+
+// } 
+
